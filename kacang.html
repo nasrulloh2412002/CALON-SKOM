@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JagungKu - Sistem Pakar Diagnosa Penyakit Jagung</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        .bg-corn {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%23f0c808'/%3E%3Cpath d='M0 0h800v600H0z' fill='%23f0c808'/%3E%3Cpath d='M400 50c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zm-150 80c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zm300 0c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zM250 210c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zm300 0c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zM400 290c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zm-150 80c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zm300 0c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zM250 450c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40zm300 0c-22 0-40 18-40 40s18 40 40 40 40-18 40-40-18-40-40-40z' fill='%23e6b800' fill-opacity='.7'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .bg-corn-field {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%2378a22f'/%3E%3Cpath d='M0 400c100-50 200-50 300 0s200 50 300 0 200-50 300 0v200H0V400z' fill='%23558b2f'/%3E%3Cpath d='M0 450c100-30 200-30 300 0s200 30 300 0 200-30 300 0v150H0V450z' fill='%23255d00'/%3E%3Cpath d='M50 300v300M150 250v350M250 280v320M350 260v340M450 270v330M550 240v360M650 290v310M750 250v350' stroke='%23fdd835' stroke-width='8'/%3E%3Cpath d='M50 350c10-20 20-20 30 0M50 400c10-20 20-20 30 0M150 300c10-20 20-20 30 0M150 350c10-20 20-20 30 0M250 330c10-20 20-20 30 0M250 380c10-20 20-20 30 0M350 310c10-20 20-20 30 0M350 360c10-20 20-20 30 0M450 320c10-20 20-20 30 0M450 370c10-20 20-20 30 0M550 290c10-20 20-20 30 0M550 340c10-20 20-20 30 0M650 340c10-20 20-20 30 0M650 390c10-20 20-20 30 0M750 300c10-20 20-20 30 0M750 350c10-20 20-20 30 0' stroke='%23fbc02d' stroke-width='6'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .active-page {
+            display: block;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, .3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-in-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-green-700 flex items-center" onclick="showPage('home')">
+                <svg class="w-8 h-8 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 6.5C12 5.4 11.1 4.5 10 4.5C8.9 4.5 8 5.4 8 6.5C8 7.6 8.9 8.5 10 8.5C11.1 8.5 12 7.6 12 6.5Z" fill="#F0C808"/>
+                    <path d="M16 6.5C16 5.4 15.1 4.5 14 4.5C12.9 4.5 12 5.4 12 6.5C12 7.6 12.9 8.5 14 8.5C15.1 8.5 16 7.6 16 6.5Z" fill="#F0C808"/>
+                    <path d="M14 12.5C14 11.4 13.1 10.5 12 10.5C10.9 10.5 10 11.4 10 12.5C10 13.6 10.9 14.5 12 14.5C13.1 14.5 14 13.6 14 12.5Z" fill="#F0C808"/>
+                    <path d="M18 12.5C18 11.4 17.1 10.5 16 10.5C14.9 10.5 14 11.4 14 12.5C14 13.6 14.9 14.5 16 14.5C17.1 14.5 18 13.6 18 12.5Z" fill="#F0C808"/>
+                    <path d="M10 12.5C10 11.4 9.1 10.5 8 10.5C6.9 10.5 6 11.4 6 12.5C6 13.6 6.9 14.5 8 14.5C9.1 14.5 10 13.6 10 12.5Z" fill="#F0C808"/>
+                    <path d="M12 18.5C12 17.4 11.1 16.5 10 16.5C8.9 16.5 8 17.4 8 18.5C8 19.6 8.9 20.5 10 20.5C11.1 20.5 12 19.6 12 18.5Z" fill="#F0C808"/>
+                    <path d="M16 18.5C16 17.4 15.1 16.5 14 16.5C12.9 16.5 12 17.4 12 18.5C12 19.6 12.9 20.5 14 20.5C15.1 20.5 16 19.6 16 18.5Z" fill="#F0C808"/>
+                </svg>
+                JagungKu
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="#" class="text-gray-700 hover:text-green-600 transition-colors" onclick="showPage('home')">Home</a>
+                <a href="#" class="text-gray-700 hover:text-green-600 transition-colors" onclick="showPage('about')">About</a>
+                <a href="#" class="text-gray-700 hover:text-green-600 transition-colors" onclick="showPage('consultation')">Consultation</a>
+                <a href="#" class="text-gray-700 hover:text-green-600 transition-colors" onclick="showPage('login')">Admin Login</a>
+            </div>
+            <button class="md:hidden focus:outline-none" id="menu-toggle">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- Mobile menu -->
+        <div class="md:hidden hidden bg-white py-2 px-4 shadow-inner" id="mobile-menu">
+            <a href="#" class="block py-2 text-gray-700 hover:text-green-600" onclick="showPage('home')">Home</a>
+            <a href="#" class="block py-2 text-gray-700 hover:text-green-600" onclick="showPage('about')">About</a>
+            <a href="#" class="block py-2 text-gray-700 hover:text-green-600" onclick="showPage('consultation')">Consultation</a>
+            <a href="#" class="block py-2 text-gray-700 hover:text-green-600" onclick="showPage('login')">Admin Login</a>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <div id="home" class="page active-page">
+        <div class="h-screen bg-corn-field flex items-center justify-center">
+            <div class="container mx-auto px-4 text-center">
+                <div class="glass-dark inline-block px-8 py-6 rounded-lg shadow-lg">
+                    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Sistem Pakar Diagnosa Penyakit Jagung</h1>
+                    <p class="text-xl text-white mb-8">Deteksi dini penyakit pada tanaman jagung Anda dengan metode Naive Bayes</p>
+                    <button onclick="showPage('consultation')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-105 shadow-lg">
+                        Klik untuk memulai konsultasi
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12 text-green-700">Fitur Utama</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-green-50 p-6 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
+                        <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Diagnosa Cepat</h3>
+                        <p class="text-gray-600 text-center">Dapatkan hasil diagnosa penyakit tanaman jagung Anda dalam hitungan detik</p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-6 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
+                        <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Akurasi Tinggi</h3>
+                        <p class="text-gray-600 text-center">Menggunakan metode Naive Bayes untuk hasil diagnosa yang akurat dan terpercaya</p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-6 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
+                        <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-center mb-2">Unduh Hasil</h3>
+                        <p class="text-gray-600 text-center">Simpan hasil diagnosa dalam format PDF untuk referensi di masa mendatang</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="py-16 bg-green-50">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center mb-12 text-green-700">Penyakit Umum Tanaman Jagung</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="h-40 bg-corn mb-4 rounded-md flex items-center justify-center">
+                            <svg class="w-20 h-20 text-red-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 8v4m0 4h.01M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Hawar Daun</h3>
+                        <p class="text-gray-600">Penyakit yang menyebabkan bercak kecil kebasahan pada daun yang kemudian berubah menjadi nekrotik.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="h-40 bg-corn mb-4 rounded-md flex items-center justify-center">
+                            <svg class="w-20 h-20 text-yellow-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 8v4m0 4h.01M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Karat Daun</h3>
+                        <p class="text-gray-600">Ditandai dengan munculnya pustula berwarna coklat kemerahan pada permukaan daun.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="h-40 bg-corn mb-4 rounded-md flex items-center justify-center">
+                            <svg class="w-20 h-20 text-green-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 8v4m0 4h.01M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">Bulai</h3>
+                        <p class="text-gray-600">Menyebabkan daun jagung menjadi berwarna putih atau kuning pucat dengan garis-garis sejajar.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Page -->
+    <div id="about" class="page pt-20">
+        <div class="bg-green-700 py-16">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl font-bold text-white mb-4">Tentang JagungKu</h1>
+                <p class="text-xl text-green-100 max-w-3xl mx-auto">Sistem pakar untuk diagnosa penyakit tanaman jagung menggunakan metode Naive Bayes</p>
+            </div>
+        </div>
+        
+        <div class="py-16 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <div class="mb-12">
+                        <h2 class="text-3xl font-bold mb-6 text-green-700">Tujuan Sistem</h2>
+                        <p class="text-gray-700 mb-4">Sistem pakar JagungKu dikembangkan dengan tujuan untuk membantu petani dan praktisi pertanian dalam mendiagnosa penyakit pada tanaman jagung secara cepat dan akurat. Dengan menggunakan metode Naive Bayes, sistem ini mampu memberikan prediksi penyakit berdasarkan gejala-gejala yang teramati.</p>
+                        <p class="text-gray-700">Diagnosa dini penyakit tanaman jagung sangat penting untuk mencegah penyebaran penyakit dan meminimalkan kerugian hasil panen. Sistem ini dirancang untuk menjadi alat bantu yang mudah diakses dan digunakan oleh siapa saja, bahkan tanpa pengetahuan mendalam tentang patologi tanaman.</p>
+                    </div>
+                    
+                    <div class="mb-12">
+                        <h2 class="text-3xl font-bold mb-6 text-green-700">Manfaat</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-green-50 p-6 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <h3 class="text-xl font-semibold">Diagnosa Cepat</h3>
+                                </div>
+                                <p class="text-gray-600">Mendapatkan hasil diagnosa dalam hitungan detik, memungkinkan tindakan cepat untuk mengatasi penyakit.</p>
+                            </div>
+                            
+                            <div class="bg-green-50 p-6 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <h3 class="text-xl font-semibold">Akses Mudah</h3>
+                                </div>
+                                <p class="text-gray-600">Dapat diakses kapan saja dan di mana saja melalui perangkat yang terhubung ke internet.</p>
+                            </div>
+                            
+                            <div class="bg-green-50 p-6 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <h3 class="text-xl font-semibold">Penghematan Biaya</h3>
+                                </div>
+                                <p class="text-gray-600">Mengurangi kebutuhan konsultasi langsung dengan ahli patologi tanaman, menghemat biaya dan waktu.</p>
+                            </div>
+                            
+                            <div class="bg-green-50 p-6 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <h3 class="text-xl font-semibold">Peningkatan Hasil Panen</h3>
+                                </div>
+                                <p class="text-gray-600">Dengan diagnosa dini dan penanganan tepat, petani dapat meminimalkan kerugian dan meningkatkan hasil panen.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-12">
+                        <h2 class="text-3xl font-bold mb-6 text-green-700">Metode Naive Bayes</h2>
+                        <p class="text-gray-700 mb-4">Naive Bayes adalah metode klasifikasi probabilistik berdasarkan Teorema Bayes dengan asumsi independensi yang kuat (naif) antar fitur. Dalam konteks sistem pakar ini, metode Naive Bayes digunakan untuk menghitung probabilitas suatu penyakit berdasarkan gejala-gejala yang diamati.</p>
+                        <p class="text-gray-700 mb-4">Formula dasar Teorema Bayes yang digunakan adalah:</p>
+                        <div class="bg-gray-100 p-4 rounded-lg text-center mb-4">
+                            <p class="text-lg font-semibold">P(A|B) = P(B|A) × P(A) / P(B)</p>
+                        </div>
+                        <p class="text-gray-700">Di mana P(A|B) adalah probabilitas penyakit A terjadi jika gejala B diamati, P(B|A) adalah probabilitas gejala B muncul pada penyakit A, P(A) adalah probabilitas awal penyakit A, dan P(B) adalah probabilitas gejala B muncul secara umum.</p>
+                    </div>
+                    
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6 text-green-700">Kontak</h2>
+                        <div class="bg-green-50 p-6 rounded-lg">
+                            <div class="flex flex-col md:flex-row md:items-center mb-4">
+                                <div class="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
+                                    <div class="w-24 h-24 bg-green-200 rounded-full flex items-center justify-center">
+                                        <svg class="w-12 h-12 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-2">Fakultas Pertanian Universitas Indonesia</h3>
+                                    <p class="text-gray-600 mb-2">Jl. Margonda Raya, Depok, Jawa Barat 16424</p>
+                                    <p class="text-gray-600 mb-2">Email: info@jagungku.ac.id</p>
+                                    <p class="text-gray-600">Telepon: (021) 7867530</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consultation Page -->
+    <div id="consultation" class="page pt-20">
+        <div class="container mx-auto px-4 py-8">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-3xl font-bold text-green-700 mb-8 text-center">Konsultasi Diagnosa Penyakit Jagung</h1>
+                
+                <!-- Step Indicator -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-col items-center">
+                            <div id="step1-indicator" class="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                            <span class="text-sm mt-2">Data Diri</span>
+                        </div>
+                        <div class="flex-1 h-1 mx-2 bg-gray-300">
+                            <div id="progress-1-2" class="h-full bg-green-600 w-0 transition-all duration-500"></div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div id="step2-indicator" class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold">2</div>
+                            <span class="text-sm mt-2">Gejala</span>
+                        </div>
+                        <div class="flex-1 h-1 mx-2 bg-gray-300">
+                            <div id="progress-2-3" class="h-full bg-green-600 w-0 transition-all duration-500"></div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div id="step3-indicator" class="w-10 h-10 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold">3</div>
+                            <span class="text-sm mt-2">Hasil</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 1: User Information Form -->
+                <div id="step1" class="bg-white p-8 rounded-lg shadow-md slide-in">
+                    <h2 class="text-2xl font-semibold mb-6">Data Diri</h2>
+                    <form id="userForm">
+                        <div class="mb-6">
+                            <label for="name" class="block text-gray-700 font-medium mb-2">Nama Lengkap</label>
+                            <input type="text" id="name" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
+                            <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors">
+                            Lanjutkan
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Step 2: Symptoms Form -->
+                <div id="step2" class="bg-white p-8 rounded-lg shadow-md hidden">
+                    <h2 class="text-2xl font-semibold mb-6">Pilih Gejala yang Terlihat</h2>
+                    <p class="text-gray-600 mb-6">Silakan pilih semua gejala yang terlihat pada tanaman jagung Anda.</p>
+                    
+                    <form id="symptomsForm">
+                        <div id="symptomsList" class="space-y-4 mb-8">
+                            <!-- Symptoms will be dynamically populated -->
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row justify-between gap-4">
+                            <button type="button" id="backToStep1" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-4 rounded-md transition-colors">
+                                Kembali
+                            </button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors">
+                                Diagnosa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loading" class="hidden bg-white p-8 rounded-lg shadow-md text-center">
+                    <div class="loading mx-auto mb-4"></div>
+                    <p class="text-gray-700">Sedang memproses diagnosa...</p>
+                </div>
+                
+                <!-- Step 3: Results -->
+                <div id="step3" class="bg-white p-8 rounded-lg shadow-md hidden">
+                    <div id="resultContent">
+                        <div class="text-center mb-8">
+                            <div class="inline-block p-4 rounded-full bg-green-100 mb-4">
+                                <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-2xl font-semibold mb-2">Hasil Diagnosa</h2>
+                            <p class="text-gray-600">Berdasarkan gejala yang Anda pilih, berikut adalah hasil diagnosa penyakit tanaman jagung Anda.</p>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <div class="bg-green-50 p-6 rounded-lg">
+                                <h3 class="text-xl font-semibold mb-2">Penyakit Terdiagnosa:</h3>
+                                <div class="flex items-center mb-4">
+                                    <span id="diseaseName" class="text-2xl font-bold text-green-700">-</span>
+                                    <span class="ml-2 bg-green-200 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">
+                                        Probabilitas: <span id="probability">-</span>%
+                                    </span>
+                                </div>
+                                <p id="diseaseDescription" class="text-gray-700">-</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Probabilitas Penyakit Lainnya</h3>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <canvas id="diseaseChart" height="200"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Rekomendasi Penanganan</h3>
+                            <div class="bg-blue-50 p-6 rounded-lg">
+                                <p id="recommendation" class="text-gray-700">-</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row justify-between gap-4">
+                            <button id="consultAgain" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors">
+                                Konsultasi Lagi
+                            </button>
+                            <button id="downloadPDF" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Unduh PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Page -->
+    <div id="login" class="page pt-20">
+        <div class="container mx-auto px-4 py-8">
+            <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+                <div class="text-center mb-8">
+                    <svg class="w-16 h-16 text-green-600 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h1 class="text-2xl font-bold mt-4">Admin Login</h1>
+                    <p class="text-gray-600 mt-2">Masuk ke panel admin untuk mengelola sistem</p>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="mb-6">
+                        <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
+                        <input type="text" id="username" name="username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-700 font-medium mb-2">Password</label>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                            <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 focus:outline-none">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="loginError" class="text-red-600 text-sm mb-4 hidden"></div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors">
+                        Login
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Page -->
+    <div id="admin-dashboard" class="page pt-16 hidden">
+        <div class="bg-gray-100 min-h-screen">
+            <!-- Admin Navbar -->
+            <nav class="bg-green-800 text-white shadow-md">
+                <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <svg class="w-8 h-8 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 6.5C12 5.4 11.1 4.5 10 4.5C8.9 4.5 8 5.4 8 6.5C8 7.6 8.9 8.5 10 8.5C11.1 8.5 12 7.6 12 6.5Z" fill="#F0C808"/>
+                            <path d="M16 6.5C16 5.4 15.1 4.5 14 4.5C12.9 4.5 12 5.4 12 6.5C12 7.6 12.9 8.5 14 8.5C15.1 8.5 16 7.6 16 6.5Z" fill="#F0C808"/>
+                            <path d="M14 12.5C14 11.4 13.1 10.5 12 10.5C10.9 10.5 10 11.4 10 12.5C10 13.6 10.9 14.5 12 14.5C13.1 14.5 14 13.6 14 12.5Z" fill="#F0C808"/>
+                        </svg>
+                        <span class="text-xl font-bold">JagungKu Admin</span>
+                    </div>
+                    <button id="logoutBtn" class="flex items-center bg-red-700 hover:bg-red-800 px-4 py-2 rounded-md transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </nav>
+            
+            <div class="container mx-auto px-4 py-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <!-- Sidebar -->
+                    <div class="md:col-span-1">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div class="flex flex-col items-center mb-6">
+                                <div class="w-24 h-24 bg-green-200 rounded-full flex items-center justify-center mb-4">
+                                    <svg class="w-12 h-12 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                <h2 class="text-xl font-semibold" id="admin-name">Admin User</h2>
+                                <p class="text-gray-600 text-sm" id="admin-email">admin@jagungku.com</p>
+                            </div>
+                            
+                            <div class="border-t pt-4">
+                                <ul class="space-y-2">
+                                    <li>
+                                        <button class="admin-nav-item w-full flex items-center px-4 py-2 rounded-md bg-green-100 text-green-800 font-medium" data-target="profile-section">
+                                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                            </svg>
+                                            Profil Saya
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="admin-nav-item w-full flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium" data-target="symptoms-section">
+                                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                            </svg>
+                                            Data Gejala
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="admin-nav-item w-full flex items-center px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium" data-target="users-section">
+                                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                            </svg>
+                                            Data Pengguna
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Content -->
+                    <div class="md:col-span-3">
+                        <!-- Profile Section -->
+                        <div id="profile-section" class="admin-section bg-white rounded-lg shadow-md p-6 mb-6">
+                            <h2 class="text-2xl font-semibold mb-6">Profil Saya</h2>
+                            <form id="profileForm">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label for="admin-profile-name" class="block text-gray-700 font-medium mb-2">Nama</label>
+                                        <input type="text" id="admin-profile-name" name="name" value="Admin User" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    </div>
+                                    <div>
+                                        <label for="admin-profile-email" class="block text-gray-700 font-medium mb-2">Email</label>
+                                        <input type="email" id="admin-profile-email" name="email" value="admin@jagungku.com" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <h3 class="text-lg font-semibold mb-4">Ubah Password</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="current-password" class="block text-gray-700 font-medium mb-2">Password Saat Ini</label>
+                                            <input type="password" id="current-password" name="current_password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        </div>
+                                        <div>
+                                            <label for="new-password" class="block text-gray-700 font-medium mb-2">Password Baru</label>
+                                            <input type="password" id="new-password" name="new_password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        </div>
+                                    </div>
+                                    <div id="profileError" class="text-red-600 text-sm mt-4 hidden"></div>
+                                </div>
+                                
+                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                                    Simpan Perubahan
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Symptoms Section -->
+                        <div id="symptoms-section" class="admin-section bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-2xl font-semibold">Data Gejala</h2>
+                                <button id="addSymptomBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Tambah Gejala
+                                </button>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table id="symptomsTable" class="min-w-full bg-white">
+                                    <thead>
+                                        <tr>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kode</th>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Gejala</th>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="symptomsTableBody">
+                                        <!-- Symptoms will be dynamically populated -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Users Section -->
+                        <div id="users-section" class="admin-section bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+                            <h2 class="text-2xl font-semibold mb-6">Data Pengguna</h2>
+                            
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between">
+                                    <div class="relative">
+                                        <input type="text" id="userSearch" placeholder="Cari pengguna..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                        <svg class="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <select id="usersPerPage" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                            <option value="10">10 per halaman</option>
+                                            <option value="25">25 per halaman</option>
+                                            <option value="50">50 per halaman</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table id="usersTable" class="min-w-full bg-white">
+                                    <thead>
+                                        <tr>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama</th>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal Konsultasi</th>
+                                            <th class="py-3 px-4 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Hasil Diagnosa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTableBody">
+                                        <!-- Users will be dynamically populated -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="mt-6 flex justify-between items-center">
+                                <p id="usersTableInfo" class="text-sm text-gray-600"></p>
+                                <div class="flex space-x-2">
+                                    <button id="prevPage" class="px-3 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50" disabled>
+                                        Sebelumnya
+                                    </button>
+                                    <button id="nextPage" class="px-3 py-1 border border-gray-300 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50">
+                                        Selanjutnya
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Symptom Modal -->
+    <div id="addSymptomModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Tambah Gejala Baru</h3>
+                <button id="closeSymptomModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="addSymptomForm">
+                <div class="mb-4">
+                    <label for="symptomCode" class="block text-gray-700 font-medium mb-2">Kode Gejala</label>
+                    <input type="text" id="symptomCode" name="code" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="symptomName" class="block text-gray-700 font-medium mb-2">Nama Gejala</label>
+                    <input type="text" id="symptomName" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+                <div id="symptomError" class="text-red-600 text-sm mb-4 hidden"></div>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                    Tambah
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Symptom Modal -->
+    <div id="editSymptomModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Edit Gejala</h3>
+                <button id="closeEditSymptomModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="editSymptomForm">
+                <input type="hidden" id="editSymptomId" name="id">
+                <div class="mb-4">
+                    <label for="editSymptomCode" class="block text-gray-700 font-medium mb-2">Kode Gejala</label>
+                    <input type="text" id="editSymptomCode" name="code" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="editSymptomName" class="block text-gray-700 font-medium mb-2">Nama Gejala</label>
+                    <input type="text" id="editSymptomName" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </div>
+                <div id="editSymptomError" class="text-red-600 text-sm mb-4 hidden"></div>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                    Simpan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data storage using localStorage
+        const STORAGE_KEYS = {
+            SYMPTOMS: 'jagungku_symptoms',
+            USERS: 'jagungku_users',
+            CONSULTATIONS: 'jagungku_consultations',
+            ADMIN: 'jagungku_admin'
+        };
+
+        // Initialize default data
+        const initData = () => {
+            if (!localStorage.getItem(STORAGE_KEYS.SYMPTOMS)) {
+                const defaultSymptoms = [
+                    { id: 1, code: 'G001', name: 'Daun memiliki bercak coklat' },
+                    { id: 2, code: 'G002', name: 'Daun mengering dan rapuh' },
+                    { id: 3, code: 'G003', name: 'Daun menguning' },
+                    { id: 4, code: 'G004', name: 'Terdapat pustula berwarna merah kecoklatan' },
+                    { id: 5, code: 'G005', name: 'Daun berwarna putih atau pucat' },
+                    { id: 6, code: 'G006', name: 'Terdapat garis-garis kuning sejajar pada daun' },
+                    { id: 7, code: 'G007', name: 'Batang membusuk' },
+                    { id: 8, code: 'G008', name: 'Tanaman kerdil' },
+                    { id: 9, code: 'G009', name: 'Tongkol jagung membusuk' },
+                    { id: 10, code: 'G010', name: 'Terdapat jamur berwarna putih' }
+                ];
+                localStorage.setItem(STORAGE_KEYS.SYMPTOMS, JSON.stringify(defaultSymptoms));
+            }
+            if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
+                localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify([]));
+            }
+            if (!localStorage.getItem(STORAGE_KEYS.CONSULTATIONS)) {
+                localStorage.setItem(STORAGE_KEYS.CONSULTATIONS, JSON.stringify([]));
+            }
+            if (!localStorage.getItem(STORAGE_KEYS.ADMIN)) {
+                localStorage.setItem(STORAGE_KEYS.ADMIN, JSON.stringify({
+                    username: 'admin',
+                    password: 'admin123',
+                    name: 'Admin User',
+                    email: 'admin@jagungku.com'
+                }));
+            }
+        };
+
+        // Disease database with symptoms and recommendations
+        const DISEASES = [
+            {
+                name: 'Hawar Daun',
+                symptoms: ['G001', 'G002', 'G003'],
+                prior: 0.4,
+                likelihoods: {
+                    'G001': 0.8,
+                    'G002': 0.7,
+                    'G003': 0.6,
+                    'G004': 0.1,
+                    'G005': 0.1,
+                    'G006': 0.1,
+                    'G007': 0.2,
+                    'G008': 0.3,
+                    'G009': 0.2,
+                    'G010': 0.1
+                },
+                description: 'Penyakit yang menyebabkan bercak kecil kebasahan pada daun yang kemudian berubah menjadi nekrotik.',
+                recommendation: 'Gunakan fungisida berbahan aktif mancozeb atau chlorothalonil. Pastikan drainase lahan baik untuk mengurangi kelembapan.'
+            },
+            {
+                name: 'Karat Daun',
+                symptoms: ['G004', 'G003'],
+                prior: 0.35,
+                likelihoods: {
+                    'G001': 0.2,
+                    'G002': 0.3,
+                    'G003': 0.7,
+                    'G004': 0.9,
+                    'G005': 0.1,
+                    'G006': 0.2,
+                    'G007': 0.1,
+                    'G008': 0.2,
+                    'G009': 0.1,
+                    'G010': 0.1
+                },
+                description: 'Ditandai dengan munculnya pustula berwarna coklat kemerahan pada permukaan daun.',
+                recommendation: 'Aplikasikan fungisida berbahan aktif propiconazole. Rotasi tanaman dan buang sisa tanaman yang terinfeksi.'
+            },
+            {
+                name: 'Bulai',
+                symptoms: ['G005', 'G006', 'G008'],
+                prior: 0.25,
+                likelihoods: {
+                    'G001': 0.1,
+                    'G002': 0.2,
+                    'G003': 0.3,
+                    'G004': 0.1,
+                    'G005': 0.9,
+                    'G006': 0.8,
+                    'G007': 0.1,
+                    'G008': 0.7,
+                    'G009': 0.2,
+                    'G010': 0.3
+                },
+                description: 'Menyebabkan daun jagung menjadi berwarna putih atau kuning pucat dengan garis-garis sejajar.',
+                recommendation: 'Gunakan benih tahan penyakit dan aplikasikan fungisida sistemik seperti metalaxyl pada awal pertumbuhan.'
+            }
+        ];
+
+        // Initialize data
+        initData();
+
+        // Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active-page'));
+            document.querySelector(`#${pageId}`).classList.add('active-page');
+            document.querySelector('#mobile-menu').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.querySelector('#menu-toggle').addEventListener('click', () => {
+            document.querySelector('#mobile-menu').classList.toggle('hidden');
+        });
+
+        // Consultation Process
+        let currentStep = 1;
+        let userData = {};
+        let selectedSymptoms = [];
+        let diseaseChart = null;
+
+        function updateStepIndicator(step) {
+            document.querySelector(`#step${currentStep}-indicator`).classList.remove('bg-green-600', 'text-white');
+            document.querySelector(`#step${currentStep}-indicator`).classList.add('bg-gray-300', 'text-gray-600');
+            document.querySelector(`#step${step}-indicator`).classList.remove('bg-gray-300', 'text-gray-600');
+            document.querySelector(`#step${step}-indicator`).classList.add('bg-green-600', 'text-white');
+            
+            if (step > 1) {
+                document.querySelector('#progress-1-2').style.width = '100%';
+            } else {
+                document.querySelector('#progress-1-2').style.width = '0';
+            }
+            
+            if (step > 2) {
+                document.querySelector('#progress-2-3').style.width = '100%';
+            } else {
+                document.querySelector('#progress-2-3').style.width = '0';
+            }
+
+            document.querySelector(`#step${currentStep}`).classList.add('hidden');
+            document.querySelector(`#step${step}`).classList.remove('hidden');
+            if (step === 2) {
+                populateSymptoms();
+            }
+            currentStep = step;
+        }
+
+        // Populate symptoms dynamically
+        function populateSymptoms() {
+            const symptoms = JSON.parse(localStorage.getItem(STORAGE_KEYS.SYMPTOMS)) || [];
+            const symptomsList = document.querySelector('#symptomsList');
+            symptomsList.innerHTML = '';
+            symptoms.forEach((symptom, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center';
+                div.innerHTML = `
+                    <input type="checkbox" id="symptom${index + 1}" name="symptoms" value="${symptom.code}" class="w-5 h-5 text-green-600 rounded focus:ring-green-500">
+                    <label for="symptom${index + 1}" class="ml-3 text-gray-700">${symptom.name}</label>
+                `;
+                symptomsList.appendChild(div);
+            });
+        }
+
+        // User Form Submission
+        document.querySelector('#userForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.querySelector('#name').value.trim();
+            const email = document.querySelector('#email').value.trim();
+            if (!name || !email) {
+                alert('Harap isi semua kolom!');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert('Email tidak valid!');
+                return;
+            }
+            userData = { name, email };
+            let users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || [];
+            if (!users.some(user => user.email === email)) {
+                users.push({ id: users.length + 1, name, email });
+                localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+            }
+            updateStepIndicator(2);
+        });
+
+        // Back to Step 1
+        document.querySelector('#backToStep1').addEventListener('click', () => {
+            updateStepIndicator(1);
+        });
+
+        // Symptoms Form Submission
+        document.querySelector('#symptomsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            selectedSymptoms = Array.from(document.querySelectorAll('input[name="symptoms"]:checked')).map(input => input.value);
+            if (selectedSymptoms.length === 0)
+            {
+                alert('Silakan pilih setidaknya satu gejala.');
+                return;
+            }
+
+            // Show loading state
+            document.querySelector('#loading').classList.remove('hidden');
+            document.querySelector('#step2').classList.add('hidden');
+
+            // Simulate diagnosis process
+            setTimeout(() => {
+                document.querySelector('#loading').classList.add('hidden');
+                const diagnosis = performDiagnosis(selectedSymptoms);
+                displayResults(diagnosis);
+                updateStepIndicator(3);
+            }, 1000);
+        });
+
+        // Perform diagnosis based on selected symptoms
+        function performDiagnosis(selectedSymptoms) {
+            const results = DISEASES.map(disease => {
+                const likelihood = selectedSymptoms.reduce((acc, symptom) => {
+                    return acc * (disease.likelihoods[symptom] || 0);
+                }, 1);
+                const probability = likelihood * disease.prior;
+                return { name: disease.name, probability, description: disease.description, recommendation: disease.recommendation };
+            });
+
+            // Sort results by probability
+            results.sort((a, b) => b.probability - a.probability);
+            return results[0]; // Return the highest probability disease
+        }
+
+        // Display results on the results page
+        function displayResults(diagnosis) {
+            document.querySelector('#diseaseName').textContent = diagnosis.name;
+            document.querySelector('#probability').textContent = (diagnosis.probability * 100).toFixed(2);
+            document.querySelector('#diseaseDescription').textContent = diagnosis.description;
+            document.querySelector('#recommendation').textContent = diagnosis.recommendation;
+
+            // Prepare chart data
+            const chartData = DISEASES.map(disease => {
+                const likelihood = selectedSymptoms.reduce((acc, symptom) => {
+                    return acc * (disease.likelihoods[symptom] || 0);
+                }, 1);
+                const probability = likelihood * disease.prior;
+                return { label: disease.name, value: probability };
+            });
+
+            // Create chart
+            createDiseaseChart(chartData);
+        }
+
+        // Create a chart for disease probabilities
+        function createDiseaseChart(data) {
+            const ctx = document.getElementById('diseaseChart').getContext('2d');
+            const labels = data.map(d => d.label);
+            const values = data.map(d => d.value);
+
+            if (diseaseChart) {
+                diseaseChart.destroy();
+            }
+
+            diseaseChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Probabilitas Penyakit',
+                        data: values,
+                        backgroundColor: 'rgba(46, 125, 50, 0.6)',
+                        borderColor: 'rgba(46, 125, 50, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Probabilitas'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Penyakit'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Download PDF functionality
+        document.querySelector('#downloadPDF').addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text(`Hasil Diagnosa Penyakit Jagung`, 10, 10);
+            doc.text(`Nama: ${userData.name}`, 10, 20);
+            doc.text(`Email: ${userData.email}`, 10, 30);
+            doc.text(`Penyakit Terdiagnosa: ${document.querySelector('#diseaseName').textContent}`, 10, 40);
+            doc.text(`Probabilitas: ${document.querySelector('#probability').textContent}%`, 10, 50);
+            doc.text(`Deskripsi: ${document.querySelector('#diseaseDescription').textContent}`, 10, 60);
+            doc.text(`Rekomendasi: ${document.querySelector('#recommendation').textContent}`, 10, 70);
+            doc.save('Hasil_Diagnosa_Jagung.pdf');
+        });
+
+        // Admin Login Logic
+        document.querySelector('#loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.querySelector('#username').value;
+            const password = document.querySelector('#password').value;
+
+            const adminData = JSON.parse(localStorage.getItem(STORAGE_KEYS.ADMIN));
+            if (username === adminData.username && password === adminData.password) {
+                showPage('admin-dashboard');
+                loadAdminDashboard();
+            } else {
+                document.querySelector('#loginError').textContent = 'Username atau password salah!';
+                document.querySelector('#loginError').classList.remove('hidden');
+            }
+        });
+
+        // Load Admin Dashboard
+        function loadAdminDashboard() {
+            const adminName = document.querySelector('#admin-name');
+            const adminEmail = document.querySelector('#admin-email');
+            adminName.textContent = JSON.parse(localStorage.getItem(STORAGE_KEYS.ADMIN)).name;
+            adminEmail.textContent = JSON.parse(localStorage.getItem(STORAGE_KEYS.ADMIN)).email;
+
+            loadSymptoms();
+            loadUsers();
+        }
+
+        // Load Symptoms
+        function loadSymptoms() {
+            const symptoms = JSON.parse(localStorage.getItem(STORAGE_KEYS.SYMPTOMS)) || [];
+            const symptomsTableBody = document.querySelector('#symptomsTableBody');
+            symptomsTableBody.innerHTML = '';
+            symptoms.forEach(symptom => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="py-3 px-4 border-b">${symptom.id}</td>
+                    <td class="py-3 px-4 border-b">${symptom.code}</td>
+                    <td class="py-3 px-4 border-b">${symptom.name}</td>
+                    <td class="py-3 px-4 border-b">
+                        <button class="text-blue-600 hover:text-blue-800" onclick="editSymptom(${symptom.id})">Edit</button>
+                        <button class="text-red-600 hover:text-red-800" onclick="deleteSymptom(${symptom.id})">Hapus</button>
+                    </td>
+                `;
+                symptomsTableBody.appendChild(row);
+            });
+        }
+
+        // Load Users
+        function loadUsers() {
+            const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || [];
+            const usersTableBody = document.querySelector('#usersTableBody');
+            usersTableBody.innerHTML = '';
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="py-3 px-4 border-b">${user.id}</td>
+                    <td class="py-3 px-4 border-b">${user.name}</td>
+                    <td class="py-3 px-4 border-b">${user.email}</td>
+                    <td class="py-3 px-4 border-b">${new Date().toLocaleDateString()}</td>
+                    <td class="py-3 px-4 border-b">
+                        <button class="text-red-600 hover:text-red-800" onclick="deleteUser (${user.id})">Hapus</button>
+                    </td>
+                `;
+                usersTableBody.appendChild(row);
+            });
+        }
+
+        // Edit Symptom
+        function editSymptom(id) {
+            const symptoms = JSON.parse(localStorage.getItem(STORAGE_KEYS.SYMPTOMS)) || [];
+            const symptom = symptoms.find(s => s.id === id);
+            if (symptom) {
+                document.querySelector('#editSymptomId').value = symptom.id;
+                document.querySelector('#editSymptomCode').value = symptom.code;
+                document.querySelector('#editSymptomName').value = symptom.name;
+                document.querySelector('#editSymptomModal').classList.remove('hidden');
+            }
+        }
+
+        // Delete Symptom
+        function deleteSymptom(id) {
+            let symptoms = JSON.parse(localStorage.getItem(STORAGE_KEYS.SYMPTOMS)) || [];
+            symptoms = symptoms.filter(s => s.id !== id);
+            localStorage.setItem(STORAGE_KEYS.SYMPTOMS, JSON.stringify(symptoms));
+            loadSymptoms();
+        }
+
+        // Delete User
+        function deleteUser (id) {
+            let users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || [];
+            users = users.filter(u => u.id !== id);
+            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+            loadUsers();
+        }
+
+        // Close Modals
+        document.querySelector('#closeSymptomModal').addEventListener('click', () => {
+            document.querySelector('#addSymptomModal').classList.add('hidden');
+        });
+
+        document.querySelector('#closeEditSymptomModal').addEventListener('click', () => {
+            document.querySelector('#editSymptomModal').classList.add('hidden');
+        });
+
+        // Add Symptom Form Submission
+        document.querySelector('#addSymptomForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const code = document.querySelector('#symptomCode').value;
+            const name = document.querySelector('#symptomName').value;
+
+            let symptoms = JSON.parse(localStorage.getItem(STORAGE_KEYS.SYMPTOMS)) || [];
+            const newSymptom = {
+                id: symptoms.length + 1,
+                code,
+                name
+            };
+            symptoms.push(newSymptom);
+            localStorage.setItem(STORAGE_KEYS.SYMPTOMS, JSON.stringify(symptoms));
+            loadSymptoms();
+            document.querySelector('#addSymptomModal').classList.add('hidden');
+        });
+
+        // Edit Symptom Form Submission
+        document.querySelector('#editSymptomForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.querySelector('#editSymptomId').value;
+            const code = document.querySelector('#editSymptomCode').value;
+            const name = document.querySelector('#editSymptomName').value;
+
+            let symptoms = JSON.parse(localStorage.getItem(STORAGE_KEYS.SYMPTOMS)) || [];
+            const symptomIndex = symptoms.findIndex(s => s.id === parseInt(id));
+            if (symptomIndex !== -1) {
+                symptoms[symptomIndex] = { id: parseInt(id), code, name };
+                localStorage.setItem(STORAGE_KEYS.SYMPTOMS, JSON.stringify(symptoms));
+                loadSymptoms();
+                document.querySelector('#editSymptomModal').classList.add('hidden');
+            }
+        });
+
+        // Initialize data on page load
+        window.onload = initData;
+    ;
+    </script>
+</body>
+</html>
